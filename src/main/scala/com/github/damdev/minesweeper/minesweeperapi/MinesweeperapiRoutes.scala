@@ -2,19 +2,29 @@ package com.github.damdev.minesweeper.minesweeperapi
 
 import cats.effect.Sync
 import cats.implicits._
+import com.github.damdev.minesweeper.minesweeperapi.GameCodecs._
+import com.github.damdev.minesweeper.minesweeperapi.services.GameService
 import org.http4s.HttpRoutes
+import org.http4s.circe.CirceEntityEncoder._
+import io.circe.syntax._
 import org.http4s.dsl.Http4sDsl
+
 
 object MinesweeperapiRoutes {
 
-  def jokeRoutes[F[_]: Sync](J: Jokes[F]): HttpRoutes[F] = {
-    val dsl = new Http4sDsl[F]{}
+  def get[F[_]: Sync](G: GameService[F]): HttpRoutes[F] = {
+    implicit val dsl = new Http4sDsl[F]{}
     import dsl._
     HttpRoutes.of[F] {
-      case GET -> Root / "joke" =>
+      case GET -> Root / "game" / id  =>
         for {
-          joke <- J.get
-          resp <- Ok(joke)
+          game <- G.get(id)
+          resp <- game.fold(_.toResponse[F], g => Ok(g))
+        } yield resp
+      case GET -> Root / "game" / id / "reveal" / IntVar(x) / IntVar(y)  =>
+        for {
+          revealed <- G.reveal(id, x, y)
+          resp <- revealed.fold(_.toResponse[F], g => Ok(g))
         } yield resp
     }
   }
