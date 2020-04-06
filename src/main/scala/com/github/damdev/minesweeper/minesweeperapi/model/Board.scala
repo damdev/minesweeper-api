@@ -4,14 +4,15 @@ import com.github.damdev.minesweeper.minesweeperapi.errors._
 
 case class Board(positions: Map[(Int, Int), Position]) {
 
-  def flag(x: Int, y: Int): Either[MinesweeperError, Board] = {
-    positions.get(x -> y).map { p =>
-      val newBoard = this.copy(positions.updated(x -> y, p.toggleFlag()))
+  private def withPosition[T](x: Int, y: Int)(f: Position => Either[MinesweeperError, T]): Either[MinesweeperError, T] =
+    positions.get(x -> y).map(f).getOrElse(Left(IndexOutOfBoardError(x, y)))
+
+  def flag(x: Int, y: Int): Either[MinesweeperError, Board] = withPosition(x, y) { p =>
+      val newBoard = copy(positions.updated(x -> y, p.toggleFlag()))
       if (newBoard.flagCount > newBoard.mineCount)
         Left(TooManyFlagsError(mineCount))
       else
         Right(newBoard)
-    }.getOrElse(Left(IndexOutOfBoardError(x, y)))
   }
 
   private def mineCount = positions.values.count(_.mine)
@@ -20,19 +21,17 @@ case class Board(positions: Map[(Int, Int), Position]) {
   private def winOrContinue(): RevealResult =
     if(positions.values.filter(!_.mine).forall(p => p.revealed)) RevealResult.win(this) else RevealResult.continue(this)
 
-  def reveal(x: Int, y: Int): Either[MinesweeperError, RevealResult] = {
-    positions.get(x -> y).map { p =>
+  def reveal(x: Int, y: Int): Either[MinesweeperError, RevealResult] = withPosition(x, y) { p =>
       val revealed = p.reveal()
       Right(
         if (p.mine) {
-          RevealResult.lose(this.copy(this.positions.updated(x -> y, revealed)))
+          RevealResult.lose(copy(positions.updated(x -> y, revealed)))
         } else if (revealed.privateHasNoAdjacentMines(this)) {
-          this.copy(revealAllNeighbourgNoMines(this.positions.updated(x -> y, revealed), revealed)).winOrContinue()
+          copy(revealAllNeighbourgNoMines(positions.updated(x -> y, revealed), revealed)).winOrContinue()
         } else {
-          this.copy(this.positions.updated(x -> y, revealed)).winOrContinue()
+          copy(positions.updated(x -> y, revealed)).winOrContinue()
         }
       )
-    }.getOrElse(Left(IndexOutOfBoardError(x, y)))
   }
 
   private def revealAllNeighbourgNoMines(positions: Map[(Int, Int), Position], position: Position): Map[(Int, Int), Position] = {
