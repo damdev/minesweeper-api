@@ -26,11 +26,20 @@ package object errors {
   }
 
   case class GameNotFoundError(id: String) extends MinesweeperHttpError {
-    override def msg: String = s"Game with id: ${id} not found."
+    override def msg: String = s"Game with id: $id not found."
   }
 
   case object GameTerminatedError extends MinesweeperError {
     override def msg: String = "Game already finished."
   }
+
   case class BoardError(msg: String) extends MinesweeperError
+
+  case class IndexOutOfBoardError(x: Int, y: Int) extends MinesweeperError {
+    override def msg: String = s"Index out of board, ($x, $y)"
+  }
+
+  case class TooManyFlagsError(mines: Int) extends MinesweeperError {
+    override def msg: String = s"Too many flags. #Mines: $mines"
+  }
 }

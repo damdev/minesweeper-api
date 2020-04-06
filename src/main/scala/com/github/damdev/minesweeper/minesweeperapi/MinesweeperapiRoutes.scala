@@ -26,6 +26,12 @@ object MinesweeperapiRoutes {
           revealed <- G.reveal(id, x, y)
           resp <- revealed.fold(_.toResponse[F], g => Ok(g))
         } yield resp
+      case GET -> Root / "game" / id / "flag" / IntVar(x) / IntVar(y)  =>
+        for {
+          revealed <- G.flag(id, x, y)
+          resp <- revealed.fold(_.toResponse[F], g => Ok(g))
+        } yield resp
+
     }
   }
 

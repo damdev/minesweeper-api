@@ -29,6 +29,14 @@ class GameService[F[_]: Effect] extends GameAlg[F] {
     }))
   }
 
+  def flag(id: String, x: Int, y: Int): F[Either[MinesweeperHttpError, Game]] = {
+    get(id).map(_.map({ g =>
+      val flagged = g.flag(x, y)
+      gamesById.update(id, flagged)
+      flagged
+    }))
+  }
+
 }
 
 object GameService {

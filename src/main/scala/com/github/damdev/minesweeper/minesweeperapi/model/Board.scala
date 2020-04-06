@@ -1,6 +1,6 @@
 package com.github.damdev.minesweeper.minesweeperapi.model
 
-import com.github.damdev.minesweeper.minesweeperapi.errors.{BoardError, MinesweeperError}
+import com.github.damdev.minesweeper.minesweeperapi.errors._
 
 case class Board(positions: Map[(Int, Int), Position]) {
 
@@ -8,10 +8,10 @@ case class Board(positions: Map[(Int, Int), Position]) {
     positions.get(x -> y).map { p =>
       val newBoard = this.copy(positions.updated(x -> y, p.toggleFlag()))
       if (newBoard.flagCount > newBoard.mineCount)
-        Left(BoardError(s"Too many flags. #Mines: $mineCount"))
+        Left(TooManyFlagsError(mineCount))
       else
         Right(newBoard)
-    }.getOrElse(Left(BoardError("Index out of board.")))
+    }.getOrElse(Left(IndexOutOfBoardError(x, y)))
   }
 
   private def mineCount = positions.values.count(_.mine)
@@ -26,33 +26,28 @@ case class Board(positions: Map[(Int, Int), Position]) {
       Right(
         if (p.mine) {
           RevealResult.lose(this.copy(this.positions.updated(x -> y, revealed)))
-        } else if (revealed.adjacentMines(this).contains(0)) {
+        } else if (revealed.privateHasNoAdjacentMines(this)) {
           this.copy(revealAllNeighbourgNoMines(this.positions.updated(x -> y, revealed), revealed)).winOrContinue()
         } else {
           this.copy(this.positions.updated(x -> y, revealed)).winOrContinue()
         }
       )
-    }.getOrElse(Left(BoardError(s"Index out of board, ($x, $y)")))
+    }.getOrElse(Left(IndexOutOfBoardError(x, y)))
   }
-
-  private def hasNoAdjacentMines(positions: Map[(Int, Int), Position], p: Position): Boolean =
-    positions.values.filter(p.isNeighbour).count(_.mine) == 0
 
   private def revealAllNeighbourgNoMines(positions: Map[(Int, Int), Position], position: Position): Map[(Int, Int), Position] = {
     val revealed = positions.values.filter(position.isNeighbour).filter(p => !p.mine && !p.revealed).map(_.reveal())
-    val toReveal = positions.values.filter(position.isNeighbour).filter(p => !p.mine && !p.revealed && hasNoAdjacentMines(positions, p)).map(_.reveal())
+    val toReveal = positions.values.filter(position.isNeighbour).filter(p => !p.mine && !p.revealed && p.privateHasNoAdjacentMines(this)).map(_.reveal())
     val newPositions = revealed.foldLeft(positions)((ps, n) => ps.updated(n.x -> n.y, n))
     toReveal.foldLeft(newPositions)(revealAllNeighbourgNoMines)
   }
 
   override def toString: String = {
-    val maxX = positions.keys.map(_._1).max
-    val maxY = positions.keys.map(_._2).max
     val representation = positions.values.toList.sortBy(p => p.y*10000 + p.x).foldLeft((0, "")) { (s, pos) =>
       if (pos.y != s._1) {
-        (pos.y, s._2 + s"\n${pos}")
+        (pos.y, s._2 + s"\n${pos.toString(this)}")
       } else {
-        (pos.y, s._2 + s"${pos}")
+        (pos.y, s._2 + s"${pos.toString(this)}")
 
       }
     }

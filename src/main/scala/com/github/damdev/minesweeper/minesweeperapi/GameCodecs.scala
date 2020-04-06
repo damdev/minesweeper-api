@@ -10,7 +10,6 @@ object GameCodecs {
 
   implicit val boardStatusEncoder: Encoder[BoardStatus] = (a: BoardStatus) =>
     Json.fromString(BoardStatus.toString(a))
-//  implicit val boardStatusDecoder: Decoder[BoardStatus] = (a: JsonS)
 
   implicit val positionEncoder: Encoder.AsObject[Position] = (p: Position) => Json.obj(
     "x" -> p.x.asJson,
@@ -24,12 +23,10 @@ object GameCodecs {
 
   implicit val boardEncoder: Encoder[Board] = (a: Board) => Json.obj(
     "positions" -> Json.fromValues(a.positions.values.map(
-      p => p.asJsonObject.+:("adjacent_mines", p.adjacentMines(a).asJson)
+      p => p.asJsonObject.+:("adjacent_mines", p.userAdjacentMines(a).asJson)
     ).map(_.asJson).toList),
     "ascii" -> Json.fromString(a.toString)
   )
-//  implicit val boardDecoder: Decoder[Board] = deriveDecoder
 
   implicit val gameEncoder: Encoder[Game] = deriveEncoder
-//  implicit val gameDecoder: Decoder[Game] = deriveDecoder
 }
