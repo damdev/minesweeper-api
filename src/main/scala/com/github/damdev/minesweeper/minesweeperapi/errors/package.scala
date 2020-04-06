@@ -1,6 +1,5 @@
 package com.github.damdev.minesweeper.minesweeperapi
 
-import com.sun.deploy.net.HttpResponse
 import org.http4s.Response
 import org.http4s.dsl.Http4sDsl
 import cats.implicits._
