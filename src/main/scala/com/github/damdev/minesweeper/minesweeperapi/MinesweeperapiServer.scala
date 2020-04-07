@@ -2,7 +2,7 @@ package com.github.damdev.minesweeper.minesweeperapi
 
 import cats.effect.{ConcurrentEffect, ContextShift, Timer}
 import cats.implicits._
-import com.github.damdev.minesweeper.minesweeperapi.repository.UserRepository
+import com.github.damdev.minesweeper.minesweeperapi.repository.{GameRepository, UserRepository}
 import com.github.damdev.minesweeper.minesweeperapi.services.GameAlg
 import com.github.damdev.minesweeper.minesweeperapi.utils.Authentication
 import com.github.damdev.minesweeper.minesweeperapi.utils.Config.MinesweeperApiConfig
@@ -21,10 +21,15 @@ object MinesweeperapiServer {
     for {
       client <- BlazeClientBuilder[F](global).stream
       helloWorldAlg = HelloWorld.impl[F]
-      gameAlg = GameAlg.impl[F]
+
       userRepository = UserRepository(tx)
       _ <- Stream.eval(userRepository.setup())
       authentication = Authentication(userRepository).authUser
+
+      gameRepository = GameRepository(tx)
+      _ <- Stream.eval(gameRepository.setup())
+      gameAlg = GameAlg.impl[F](gameRepository)
+
       httpApp = (
         MinesweeperapiRoutes.helloWorldRoutes[F](helloWorldAlg) <+>
           authentication(MinesweeperapiRoutes.game[F](gameAlg))

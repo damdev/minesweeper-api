@@ -2,7 +2,7 @@ package com.github.damdev.minesweeper.minesweeperapi.model
 
 import com.github.damdev.minesweeper.minesweeperapi.errors._
 
-case class Game(board: Board, boardStatus: BoardStatus = BoardStatus.Continue, lastMoveError: Option[String] = None) {
+case class Game(id: String, board: Board, boardStatus: BoardStatus = BoardStatus.Continue, lastMoveError: Option[String] = None) {
 
   def ifNotFinished(f: => Game): Game = if (boardStatus.continue) f else copy(lastMoveError = Some(GameTerminatedError.msg))
 

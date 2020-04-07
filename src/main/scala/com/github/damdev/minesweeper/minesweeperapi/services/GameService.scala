@@ -2,29 +2,21 @@ package com.github.damdev.minesweeper.minesweeperapi.services
 
 import cats.effect.Effect
 import cats.effect._
+import cats.syntax._
 import cats.implicits._
 import com.github.damdev.minesweeper.minesweeperapi.errors._
 import com.github.damdev.minesweeper.minesweeperapi.model.{Board, BoardParser, Game}
+import com.github.damdev.minesweeper.minesweeperapi.repository.GameRepository
 
-private class GameService[F[_]: Effect] extends GameAlg[F] {
-
-  val BOARD: Board = BoardParser.parse(
-    """|____X
-       |___X_
-       |__X__
-       |_____""".stripMargin)
-
-  val gamesById: scala.collection.mutable.Map[String, Game] =
-    (scala.collection.mutable.Map.newBuilder += ("0" -> Game(board = BOARD))).result()
+private class GameService[F[_]: Effect](gameRepository: GameRepository[F]) extends GameAlg[F] {
 
   override def get(id: String): F[Either[MinesweeperHttpError, Game]] =
-    gamesById.get(id).map(_.asRight[MinesweeperHttpError]).getOrElse(GameNotFoundError(id).asLeft[Game]).pure[F]
-
+    gameRepository.get(id).map(_.fold(GameNotFoundError(id).asLeft[Game])(_.asRight[GameNotFoundError]))
 
   override def reveal(id: String, x: Int, y: Int): F[Either[MinesweeperHttpError, Game]] = {
     get(id).map(_.map({ g =>
       val revealed = g.reveal(x, y)
-      gamesById.update(id, revealed)
+      gameRepository.upsert(revealed)
       revealed
     }))
   }
@@ -32,7 +24,7 @@ private class GameService[F[_]: Effect] extends GameAlg[F] {
   override def flag(id: String, x: Int, y: Int): F[Either[MinesweeperHttpError, Game]] = {
     get(id).map(_.map({ g =>
       val flagged = g.flag(x, y)
-      gamesById.update(id, flagged)
+      gameRepository.upsert(flagged)
       flagged
     }))
   }
@@ -40,7 +32,7 @@ private class GameService[F[_]: Effect] extends GameAlg[F] {
 }
 
 object GameAlg {
-  def impl[F[_]: Effect]: GameAlg[F] = new GameService[F]()
+  def impl[F[_]: Effect](gameRepository: GameRepository[F]): GameAlg[F] = new GameService[F](gameRepository)
 }
 
 trait GameAlg[F[_]] {

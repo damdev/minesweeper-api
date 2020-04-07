@@ -12,7 +12,7 @@ object MinesweeperTransactor {
         be <- Blocker[F]    // our blocking EC
         xa <- HikariTransactor.newHikariTransactor[F](
           "org.h2.Driver",                        // driver classname
-          "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1",   // connect URL
+          "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;mode=MySQL",   // connect URL
           "sa",                                   // username
           "",                                     // password
           ce,                                     // await connection here
