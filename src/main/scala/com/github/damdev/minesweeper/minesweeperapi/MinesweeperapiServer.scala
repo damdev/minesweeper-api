@@ -28,7 +28,7 @@ object MinesweeperapiServer {
 
       gameRepository = GameRepository(tx)
       _ <- Stream.eval(gameRepository.setup())
-      gameAlg = GameAlg.impl[F](gameRepository)
+      gameAlg = GameAlg.impl[F](gameRepository, config.defaults)
 
       httpApp = (
         MinesweeperapiRoutes.helloWorldRoutes[F](helloWorldAlg) <+>

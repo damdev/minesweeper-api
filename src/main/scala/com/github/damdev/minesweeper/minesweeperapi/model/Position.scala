@@ -15,7 +15,7 @@ case class Position(x: Int, y: Int, mine: Boolean, flagged: Boolean = false, rev
 
   def privateHasNoAdjacentMines(b: Board): Boolean = privateAdjacentMines(b) == 0
 
-  def isNeighbour(pp: Position) = (pp.x - this.x) <= 1 && (pp.y - this.y) <= 1 && this != pp
+  def isNeighbour(pp: Position) = Math.abs(pp.x - this.x) <= 1 && Math.abs(pp.y - this.y) <= 1 && this != pp
 
   def neighbours(b: Board): Iterator[Position] = b.positions.valuesIterator.filter(this.isNeighbour)
 

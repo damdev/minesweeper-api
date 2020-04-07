@@ -45,8 +45,8 @@ Please email your solution as soon as you have completed the challenge or the ti
 - [x] When a cell with no adjacent mines is revealed, all adjacent squares will be revealed (and repeat)
 - [ ] Ability to 'flag' a cell with a question mark or red flag
 - [x] Detect when game is over
-- [ ] Persistence
+- [x] Persistence
 - [ ] Time tracking
-- [ ] Ability to preserve/resume the old ones
-- [ ] Game random generator configurable with number of rows, columns, and mines
+- [x] Ability to preserve/resume the old ones
+- [x] Game random generator configurable with number of rows, columns, and mines
 - [x] Ability to support multiple users/accounts

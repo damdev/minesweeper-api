@@ -20,12 +20,22 @@ package object errors {
       import dsl._
       error match {
         case e @ GameNotFoundError(_) => NotFound(e.msg)
+        case e @ NotYourGameError(_) => Forbidden(e.msg)
+        case e @ ImpossibleGameError => BadRequest(e.msg)
       }
     }
   }
 
   case class GameNotFoundError(id: String) extends MinesweeperHttpError {
     override def msg: String = s"Game with id: $id not found."
+  }
+
+  case class NotYourGameError(id: String) extends MinesweeperHttpError {
+    override def msg: String = s"Game with id: $id is not yours."
+  }
+
+  case object ImpossibleGameError extends MinesweeperHttpError {
+    override def msg: String = s"You are trying to generate an impossible game."
   }
 
   case object GameTerminatedError extends MinesweeperError {

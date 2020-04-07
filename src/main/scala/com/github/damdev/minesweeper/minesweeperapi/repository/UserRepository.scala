@@ -35,8 +35,8 @@ private object UserRepositorySQL {
 
   def table(): Update0 = sql"""
     CREATE TABLE USERS(
-      USERNAME VARCHAR(255),
-      HASH VARCHAR(255),
+      USERNAME VARCHAR(255) NOT NULL,
+      HASH VARCHAR(255) NOT NULL,
       PRIMARY KEY (USERNAME)
     )
   """.update
