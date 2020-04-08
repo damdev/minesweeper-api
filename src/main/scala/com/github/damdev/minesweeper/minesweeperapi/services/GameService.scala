@@ -67,8 +67,8 @@ object GameGenerator {
         picked + pickMine(picked)(width, height)
       }
       val positions = for {
-        x <- 0 to width
-        y <- 0 to height
+        x <- 0 until width
+        y <- 0 until height
       } yield (x -> y, Position(x, y, minePositions.contains(x -> y)))
       Board(positions.toMap).asRight[MinesweeperHttpError]
     }
