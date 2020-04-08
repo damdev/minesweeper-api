@@ -23,7 +23,7 @@ case class Position(x: Int, y: Int, mine: Boolean, flag: Option[FlagType] = None
 
   def toString(b: Board): String =
     if(mine && revealed) "*"
-    else if (flag.isDefined) FlagType.asString(flag.get).head.toString
+    else if (flag.isDefined) flag.filter(_ == FlagType.RedFlag).map(_ => "F").getOrElse("?")
     else userAdjacentMines(b).map(am => if(am > 0) am.toString else "R").getOrElse("_")
 }
 
