@@ -2,20 +2,23 @@ package com.github.damdev.minesweeper.minesweeperapi
 
 import cats.effect.Sync
 import cats.implicits._
-import com.github.damdev.minesweeper.minesweeperapi.GameCodecs._
-import com.github.damdev.minesweeper.minesweeperapi.MinesweeperapiRoutes._
-import com.github.damdev.minesweeper.minesweeperapi.services.GameAlg
-import com.github.damdev.minesweeper.minesweeperapi.utils.Config.MinesweeperApiConfig
+import com.github.damdev.minesweeper.minesweeperapi.codecs.GameCodecs._
+import com.github.damdev.minesweeper.minesweeperapi.codecs.UserCodecs._
+import com.github.damdev.minesweeper.minesweeperapi.services._
 import com.github.damdev.minesweeper.minesweeperapi.utils.User
 import org.http4s.{AuthedRoutes, HttpRoutes}
 import org.http4s.circe.CirceEntityEncoder._
+import org.http4s.circe.CirceEntityDecoder._
+import io.circe.syntax._
+import io.circe._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.dsl.impl.OptionalQueryParamDecoderMatcher
+import org.http4s.{AuthedRoutes, HttpRoutes}
 
 
 object MinesweeperapiRoutes {
 
-  def game[F[_]: Sync](G: GameAlg[F]): AuthedRoutes[User, F] = {
+  def games[F[_]: Sync](G: GameAlg[F]): AuthedRoutes[User, F] = {
     implicit val dsl: Http4sDsl[F] = new Http4sDsl[F]{}
     import dsl._
     AuthedRoutes.of[User, F] {
@@ -43,6 +46,19 @@ object MinesweeperapiRoutes {
           resp <- revealed.fold(_.toResponse[F], g => Ok(g))
         } yield resp
 
+    }
+  }
+
+  def users[F[_]: Sync](U: UserAlg[F]): HttpRoutes[F] = {
+    implicit val dsl: Http4sDsl[F] = new Http4sDsl[F] {}
+    import dsl._
+
+    HttpRoutes.of[F] {
+      case req @ POST -> Root / "users" => for {
+        user <- req.as[User]
+        u <- U.saveUser(user)
+        resp <- Ok(s"User ${u.username} created.")
+      } yield resp
     }
   }
 

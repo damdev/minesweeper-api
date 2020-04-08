@@ -50,4 +50,4 @@ Please email your solution as soon as you have completed the challenge or the ti
 - [x] Ability to preserve/resume the old ones
 - [x] Game random generator configurable with number of rows, columns, and mines
 - [x] Ability to support multiple users/accounts
-- [ ] Register user
+- [x] Register user

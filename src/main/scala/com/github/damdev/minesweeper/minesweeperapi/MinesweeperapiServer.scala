@@ -3,7 +3,7 @@ package com.github.damdev.minesweeper.minesweeperapi
 import cats.effect.{ConcurrentEffect, ContextShift, Timer}
 import cats.implicits._
 import com.github.damdev.minesweeper.minesweeperapi.repository.{GameRepository, UserRepository}
-import com.github.damdev.minesweeper.minesweeperapi.services.GameAlg
+import com.github.damdev.minesweeper.minesweeperapi.services.{GameAlg, UserAlg}
 import com.github.damdev.minesweeper.minesweeperapi.utils.Authentication
 import com.github.damdev.minesweeper.minesweeperapi.utils.Config.MinesweeperApiConfig
 import doobie.util.transactor.Transactor
@@ -24,7 +24,9 @@ object MinesweeperapiServer {
 
       userRepository = UserRepository(tx)
       _ <- Stream.eval(userRepository.setup())
-      authentication = Authentication(userRepository).authUser
+      userAlg = UserAlg.impl(userRepository)
+
+      authentication = Authentication(userAlg).authUser
 
       gameRepository = GameRepository(tx)
       _ <- Stream.eval(gameRepository.setup())
@@ -32,7 +34,8 @@ object MinesweeperapiServer {
 
       httpApp = (
         MinesweeperapiRoutes.helloWorldRoutes[F](helloWorldAlg) <+>
-          authentication(MinesweeperapiRoutes.game[F](gameAlg))
+        MinesweeperapiRoutes.users[F](userAlg) <+>
+          authentication(MinesweeperapiRoutes.games[F](gameAlg))
       ).orNotFound
 
       finalHttpApp = Logger.httpApp(true, true)(httpApp)

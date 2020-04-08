@@ -1,9 +1,9 @@
-package com.github.damdev.minesweeper.minesweeperapi
+package com.github.damdev.minesweeper.minesweeperapi.codecs
 
 import com.github.damdev.minesweeper.minesweeperapi.model.{Board, BoardStatus, Game, Position}
-import io.circe.Encoder
+import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import io.circe.{Decoder, Encoder, Json}
 import io.circe._
-import io.circe.generic.semiauto._
 import io.circe.syntax._
 
 object GameCodecs {
