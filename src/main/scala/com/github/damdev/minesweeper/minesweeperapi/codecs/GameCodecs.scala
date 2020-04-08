@@ -1,7 +1,6 @@
 package com.github.damdev.minesweeper.minesweeperapi.codecs
 
 import com.github.damdev.minesweeper.minesweeperapi.model.{Board, BoardStatus, FlagType, Game, Position}
-import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder, Json}
 import io.circe._
 import io.circe.syntax._
@@ -28,5 +27,13 @@ object GameCodecs {
     "ascii" -> Json.fromString(a.toString)
   )
 
-  implicit val gameEncoder: Encoder[Game] = deriveEncoder
+  implicit val gameEncoder: Encoder[Game] = (g: Game) => Json.obj(
+    "id" -> Json.fromString(g.id),
+    "status" -> g.boardStatus.asJson,
+    "owner" -> g.owner.asJson,
+    "start_time" -> g.startTime.getEpochSecond.asJson,
+    "elapsed_time_seconds" -> g.elapsedTime().asJson,
+    "finish_time" -> g.finishTime.map(_.getEpochSecond).asJson,
+    "board" -> g.board.asJson
+  )
 }

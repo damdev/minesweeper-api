@@ -39,3 +39,10 @@ scalacOptions ++= Seq(
 
 herokuFatJar in Compile := Some((assemblyOutputPath in assembly).value)
 herokuAppName in Compile := "damdev-minesweeper-api"
+
+assemblyMergeStrategy in assembly := {
+  case "module-info.class"                                => MergeStrategy.first
+  case x =>
+    val oldStrategy = (assemblyMergeStrategy in assembly).value
+    oldStrategy(x)
+}

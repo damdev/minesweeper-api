@@ -46,7 +46,7 @@ Please email your solution as soon as you have completed the challenge or the ti
 - [x] Ability to 'flag' a cell with a question mark or red flag
 - [x] Detect when game is over
 - [x] Persistence
-- [ ] Time tracking
+- [x] Time tracking
 - [x] Ability to preserve/resume the old ones
 - [x] Game random generator configurable with number of rows, columns, and mines
 - [x] Ability to support multiple users/accounts
