@@ -9,7 +9,7 @@ import org.log4s.getLogger
 object Main extends IOApp {
   val logger = getLogger
 
-  def run(args: List[String]): IO[ExitCode] = MinesweeperTransactor[IO]().use { tx =>
+  def run(args: List[String]): IO[ExitCode] =
     Config().fold(
       { err =>
         IO {
@@ -18,7 +18,9 @@ object Main extends IOApp {
         }
       },
       { c =>
-        MinesweeperapiServer.stream[IO](c, tx).compile.drain.as(ExitCode.Success)
+        MinesweeperTransactor[IO](c.database).use { tx =>
+          MinesweeperapiServer.stream[IO](c, tx).compile.drain.as(ExitCode.Success)
+        }
       })
-  }
+
 }

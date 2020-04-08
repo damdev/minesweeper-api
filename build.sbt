@@ -20,7 +20,8 @@ lazy val root = (project in file("."))
       "org.specs2"      %% "specs2-mock"         % Specs2Version % "test",
       "ch.qos.logback"  %  "logback-classic"     % LogbackVersion,
       "com.github.pureconfig" %% "pureconfig"    % "0.12.3",
-      "com.h2database"  %  "h2"                   % "1.4.200",
+      "com.h2database"  %  "h2"                  % "1.4.200",
+      "org.postgresql"  %  "postgresql"          % "42.2.1",
       "org.tpolecat"    %% "doobie-core"         % DoobieVersion,
       "org.tpolecat"    %% "doobie-hikari"       % DoobieVersion
     ),

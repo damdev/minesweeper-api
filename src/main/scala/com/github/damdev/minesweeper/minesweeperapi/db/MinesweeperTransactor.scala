@@ -1,22 +1,25 @@
 package com.github.damdev.minesweeper.minesweeperapi.db
 
+import java.net.URI
+
 import cats.effect.{Blocker, ContextShift, Effect, Resource}
+import com.github.damdev.minesweeper.minesweeperapi.utils.Config.DatabaseConfig
 import doobie.hikari.HikariTransactor
 import doobie.util.ExecutionContexts
 
 object MinesweeperTransactor {
 
-  def apply[F[_]: Effect]()(implicit contextShift: ContextShift[F]): Resource[F, HikariTransactor[F]] = {
+  def apply[F[_]: Effect](config: DatabaseConfig)(implicit contextShift: ContextShift[F]): Resource[F, HikariTransactor[F]] = {
       for {
-        ce <- ExecutionContexts.fixedThreadPool[F](32) // our connect EC
-        be <- Blocker[F]    // our blocking EC
+        ce <- ExecutionContexts.fixedThreadPool[F](32)
+        be <- Blocker[F]
         xa <- HikariTransactor.newHikariTransactor[F](
-          "org.h2.Driver",                        // driver classname
-          "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;mode=MySQL",   // connect URL
-          "sa",                                   // username
-          "",                                     // password
-          ce,                                     // await connection here
-          be                                      // execute JDBC operations here
+          config.driver,
+          config.url,
+          config.username,
+          config.password,
+          ce,
+          be
         )
       } yield xa
   }

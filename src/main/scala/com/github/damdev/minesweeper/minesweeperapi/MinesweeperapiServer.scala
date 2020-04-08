@@ -22,13 +22,13 @@ object MinesweeperapiServer {
       client <- BlazeClientBuilder[F](global).stream
 
       userRepository = UserRepository(tx)
-      _ <- Stream.eval(userRepository.setup())
+      _ <- Stream.eval(userRepository.setup()).attempt
       userAlg = UserAlg.impl(userRepository)
 
       authentication = Authentication(userAlg).authUser
 
       gameRepository = GameRepository(tx)
-      _ <- Stream.eval(gameRepository.setup())
+      _ <- Stream.eval(gameRepository.setup()).attempt
       gameAlg = GameAlg.impl[F](gameRepository, config.defaults)
 
       httpApp = (

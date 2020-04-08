@@ -24,7 +24,8 @@ private object PositionSQL {
   def upsert(p: Position, gameId: String): Update0 = sql"""
     INSERT INTO POSITIONS (GAME_ID, X, Y, MINE, FLAG, REVEALED)
     VALUES ($gameId, ${p.x}, ${p.y}, ${p.mine}, ${p.flag}, ${p.revealed})
-    ON DUPLICATE KEY UPDATE MINE = ${p.mine}, FLAG = ${p.flag}, REVEALED = ${p.revealed}
+    ON CONFLICT (GAME_ID, X, Y) DO UPDATE
+    SET MINE = ${p.mine}, FLAG = ${p.flag}, REVEALED = ${p.revealed}
   """.update
 
   def findByGame(gameId: String): Query0[Position] = sql"""
@@ -57,7 +58,7 @@ private object GameSQL {
   def upsert(game: Game): Update0 = sql"""
     INSERT INTO GAMES (ID, BOARD_STATUS, OWNER, START_TIME, FINISH_TIME, LAST_MOVE_ERROR)
     VALUES (${game.id}, ${game.boardStatus}, ${game.owner}, ${game.startTime}, ${game.finishTime}, ${game.lastMoveError})
-    ON DUPLICATE KEY UPDATE BOARD_STATUS = ${game.boardStatus}, LAST_MOVE_ERROR = ${game.lastMoveError}, FINISH_TIME = ${game.finishTime}
+    ON CONFLICT(ID) DO UPDATE SET BOARD_STATUS = ${game.boardStatus}, LAST_MOVE_ERROR = ${game.lastMoveError}, FINISH_TIME = ${game.finishTime}
   """.update
 
   def select(id: String): Query0[(String, BoardStatus, String, Instant, Option[Instant], Option[String])] = sql"""
