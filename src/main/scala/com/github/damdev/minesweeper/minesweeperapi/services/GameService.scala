@@ -24,22 +24,6 @@ private class GameService[F[_]: Effect](gameRepository: GameRepository[F], confi
 
   override def get(user: User, id: String): F[Either[MinesweeperHttpError, Game]] = withGame(id, user)(a => a.pure[F])
 
-  override def reveal(user: User, id: String, x: Int, y: Int): F[Either[MinesweeperHttpError, Game]] = withGame(id, user) { g: Game =>
-    val revealed = g.reveal(x, y)
-    gameRepository.upsert(revealed)
-  }
-
-  override def flag(user: User, id: String, x: Int, y: Int, flagType: FlagType): F[Either[MinesweeperHttpError, Game]] =
-    withGame(id, user) { g: Game =>
-    val flagged = g.flag(x, y, flagType)
-    gameRepository.upsert(flagged)
-  }
-
-  override def unflag(user: User, id: String, x: Int, y: Int): F[Either[MinesweeperHttpError, Game]] = withGame(id, user) { g: Game =>
-    val flagged = g.unflag(x, y)
-    gameRepository.upsert(flagged)
-  }
-
   override def patch(user: User, id: String, x: Int, y: Int, patch: Either[RevealPatch, FlagPatch]): F[Either[MinesweeperHttpError, Game]] =
     withGame(id, user) { g: Game =>
       val patched = g.patch(x, y, patch)
@@ -88,12 +72,6 @@ trait GameAlg[F[_]] {
   def patch(user: User, id: String, x: Int, y: Int, patch: Either[RevealPatch, FlagPatch]): F[Either[MinesweeperHttpError, Game]]
 
   def get(user: User, id: String): F[Either[MinesweeperHttpError, Game]]
-
-  def reveal(user: User, id: String, x: Int, y: Int): F[Either[MinesweeperHttpError, Game]]
-
-  def unflag(user: User, id: String, x: Int, y: Int): F[Either[MinesweeperHttpError, Game]]
-
-  def flag(user: User, id: String, x: Int, y: Int, flagType: FlagType): F[Either[MinesweeperHttpError, Game]]
 
   def generateGame(user: User, mines: Option[Int], width: Option[Int], height: Option[Int]): F[Either[MinesweeperHttpError, Game]]
 }

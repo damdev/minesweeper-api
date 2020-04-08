@@ -39,18 +39,22 @@ case class Board(positions: Map[(Int, Int), Position]) {
         if (p.mine) {
           RevealResult.lose(copy(positions.updated(x -> y, revealed)))
         } else if (revealed.privateHasNoAdjacentMines(this)) {
-          copy(revealAllNeighbourgNoMines(positions.updated(x -> y, revealed), revealed)).winOrContinue()
+          val tbr = toBeRevealed(positions.values.toSet, Set(revealed), Set(revealed), Set())
+          copy(positions = tbr.foldLeft(positions)((ps, n) => ps.updated(n.x -> n.y, n.reveal()))).winOrContinue()
         } else {
           copy(positions.updated(x -> y, revealed)).winOrContinue()
         }
       )
   }
 
-  private def revealAllNeighbourgNoMines(positions: Map[(Int, Int), Position], position: Position): Map[(Int, Int), Position] = {
-    val revealed = positions.values.filter(position.isNeighbour).filter(p => !p.mine && !p.revealed).map(_.reveal())
-    val toReveal = positions.values.filter(position.isNeighbour).filter(p => !p.mine && !p.revealed && p.privateHasNoAdjacentMines(this)).map(_.reveal())
-    val newPositions = revealed.foldLeft(positions)((ps, n) => ps.updated(n.x -> n.y, n))
-    toReveal.foldLeft(newPositions)(revealAllNeighbourgNoMines)
+  private def toBeRevealed(positions: Set[Position], toDiscover: Set[Position], toReveal: Set[Position], scanned: Set[Position]): Set[Position] = {
+      val newToRevealed = positions.filter(p => toDiscover.exists(_.isNeighbour(p))).filter(p => !p.mine && !p.revealed)
+      val newToDiscover = positions.filter(p => toDiscover.exists(_.isNeighbour(p)) && !scanned.contains(p)).filter(p => !p.mine && !p.revealed && p.privateHasNoAdjacentMines(this))
+    if(newToDiscover.isEmpty) {
+      newToRevealed ++ toReveal
+    } else {
+      toBeRevealed(positions, newToDiscover, newToRevealed ++ toReveal, scanned ++ toDiscover)
+    }
   }
 
   override def toString: String = {
@@ -59,7 +63,6 @@ case class Board(positions: Map[(Int, Int), Position]) {
         (pos.y, s._2 + s"\n${pos.toString(this)}")
       } else {
         (pos.y, s._2 + s"${pos.toString(this)}")
-
       }
     }
     representation._2

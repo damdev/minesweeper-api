@@ -32,7 +32,7 @@ object GameCodecs {
     "x" -> p.x.asJson,
     "y" -> p.y.asJson,
     "mine" -> p.publicIsMine().asJson,
-    "flagged" -> p.flag.asJson,
+    "flag" -> p.flag.asJson,
     "revealed" -> p.revealed.asJson,
   ).asObject.get
 
@@ -50,6 +50,7 @@ object GameCodecs {
     "start_time" -> g.startTime.getEpochSecond.asJson,
     "elapsed_time_seconds" -> g.elapsedTime().asJson,
     "finish_time" -> g.finishTime.map(_.getEpochSecond).asJson,
-    "board" -> g.board.asJson
+    "board" -> g.board.asJson,
+    "last_move_error" -> g.lastMoveError.asJson
   )
 }
