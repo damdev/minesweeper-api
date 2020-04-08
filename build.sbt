@@ -46,3 +46,7 @@ assemblyMergeStrategy in assembly := {
     val oldStrategy = (assemblyMergeStrategy in assembly).value
     oldStrategy(x)
 }
+
+lazy val stage = taskKey[sbt.File]("Assembly as stage for heroku")
+
+stage := assembly.value
