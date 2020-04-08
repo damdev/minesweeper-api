@@ -20,7 +20,6 @@ object MinesweeperapiServer {
   def stream[F[_]: ConcurrentEffect](config: MinesweeperApiConfig, tx: Transactor[F])(implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = {
     for {
       client <- BlazeClientBuilder[F](global).stream
-      helloWorldAlg = HelloWorld.impl[F]
 
       userRepository = UserRepository(tx)
       _ <- Stream.eval(userRepository.setup())
@@ -33,7 +32,6 @@ object MinesweeperapiServer {
       gameAlg = GameAlg.impl[F](gameRepository, config.defaults)
 
       httpApp = (
-        MinesweeperapiRoutes.helloWorldRoutes[F](helloWorldAlg) <+>
         MinesweeperapiRoutes.users[F](userAlg) <+>
           authentication(MinesweeperapiRoutes.games[F](gameAlg))
       ).orNotFound

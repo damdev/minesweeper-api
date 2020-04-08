@@ -52,3 +52,26 @@ Please email your solution as soon as you have completed the challenge or the ti
 - [x] Ability to support multiple users/accounts
 - [x] Register user
 - [ ] flag and reveal should be PATCH over /game/:id
+
+# API
+## Authentication
+This app uses Basic access authentication https://en.wikipedia.org/wiki/Basic_access_authentication
+
+## /games
+
+- `GET /games/new?mines=5&height=10&width10`
+Creates a random generated game, with mines and dimensions specified. All arguments are optional and have configurable defaults.
+
+- `GET /games/:id`
+Retrieve an already created game for visualization.
+ 
+- `PATCH /games/:id/:x/:y { "revealed": true }`
+Reveals a position (x, y) and returns the modified game by this action. 
+
+- `PATCH /games/:id/:x/:y { "flag": ":flag_type" }`
+Flags a position (x, y) with :flag_type of flag (`red_flag`|`question_mark`|`null`) and returns the modified game by this action.
+
+## /users
+
+- `POST /users { "username": ":username", "password": ":password" }`
+Creates an user with :username and :password.

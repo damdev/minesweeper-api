@@ -4,7 +4,7 @@ import cats.effect.Sync
 import cats.implicits._
 import com.github.damdev.minesweeper.minesweeperapi.codecs.GameCodecs._
 import com.github.damdev.minesweeper.minesweeperapi.codecs.UserCodecs._
-import com.github.damdev.minesweeper.minesweeperapi.model.FlagType
+import com.github.damdev.minesweeper.minesweeperapi.model.{FlagPatch, FlagType, RevealPatch}
 import com.github.damdev.minesweeper.minesweeperapi.services._
 import com.github.damdev.minesweeper.minesweeperapi.utils.{User, UserRequest}
 import org.http4s.{AuthedRoutes, HttpRoutes, ParseFailure, QueryParamDecoder}
@@ -21,8 +21,9 @@ object MinesweeperapiRoutes {
   def games[F[_]: Sync](G: GameAlg[F]): AuthedRoutes[User, F] = {
     implicit val dsl: Http4sDsl[F] = new Http4sDsl[F]{}
     import dsl._
+
     AuthedRoutes.of[User, F] {
-      case GET -> Root / "game" / "new" :?
+      case GET -> Root / "games" / "new" :?
           OptionalMinesQueryParamMatcher(maybeMines) +&
           OptionalHeightQueryParamMatcher(maybeHeight) +&
           OptionalWidthQueryParamMatcher(maybeWidth) as user  =>
@@ -30,20 +31,16 @@ object MinesweeperapiRoutes {
           game <- G.generateGame(user, maybeMines, maybeWidth, maybeHeight)
           resp <- game.fold(_.toResponse[F], g => Ok(g))
         } yield resp
-      case GET -> Root / "game" / id as user  =>
+      case GET -> Root / "games" / id as user  =>
         for {
           game <- G.get(user, id)
           resp <- game.fold(_.toResponse[F], g => Ok(g))
         } yield resp
-      case GET -> Root / "game" / id / "reveal" / IntVar(x) / IntVar(y) as user  =>
+      case req @ PATCH -> Root / "games" / id / IntVar(x) / IntVar(y) as user  =>
         for {
-          revealed <- G.reveal(user, id, x, y)
-          resp <- revealed.fold(_.toResponse[F], g => Ok(g))
-        } yield resp
-      case GET -> Root / "game" / id / "flag" / IntVar(x) / IntVar(y) :? OptionalFlagTypeQueryParamMatcher(flagType) as user  =>
-        for {
-          flagged <- G.flag(user, id, x, y, flagType.getOrElse(FlagType.RedFlag))
-          resp <- flagged.fold(_.toResponse[F], g => Ok(g))
+          patch <- req.req.as[Either[RevealPatch, FlagPatch]]
+          patched <- G.patch(user, id, x, y, patch)
+          resp <- patched.fold(_.toResponse[F], g => Ok(g))
         } yield resp
 
     }
@@ -59,18 +56,6 @@ object MinesweeperapiRoutes {
         u <- U.saveUser(User.fromRequest(user))
         resp <- Ok(s"User ${u.username} created.")
       } yield resp
-    }
-  }
-
-  def helloWorldRoutes[F[_]: Sync](H: HelloWorld[F]): HttpRoutes[F] = {
-    val dsl = new Http4sDsl[F]{}
-    import dsl._
-    HttpRoutes.of[F] {
-      case GET -> Root / "hello" / name =>
-        for {
-          greeting <- H.hello(HelloWorld.Name(name))
-          resp <- Ok(greeting)
-        } yield resp
     }
   }
 

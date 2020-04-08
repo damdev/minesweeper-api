@@ -48,6 +48,10 @@ package object errors {
     override def msg: String = s"Index out of board, ($x, $y)"
   }
 
+  case class UndoRevealError(x: Int, y: Int) extends MinesweeperError {
+    override def msg: String = s"Can't undo a reveal, on ($x, $y)"
+  }
+
   case class TooManyFlagsError(mines: Int) extends MinesweeperError {
     override def msg: String = s"Too many red flags. #Mines: $mines"
   }

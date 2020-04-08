@@ -1,8 +1,12 @@
 package com.github.damdev.minesweeper.minesweeperapi.model
 
 import com.github.damdev.minesweeper.minesweeperapi.errors._
+import cats.implicits._
 
 case class Board(positions: Map[(Int, Int), Position]) {
+  def patch(x: Int, y: Int, patch: Either[RevealPatch, FlagPatch]): Either[MinesweeperError, RevealResult] = {
+    patch.fold(_.patch(x, y, this), _.patch(x, y, this).map(RevealResult.continue))
+  }
 
   private def withPosition[T](x: Int, y: Int)(f: Position => Either[MinesweeperError, T]): Either[MinesweeperError, T] =
     positions.get(x -> y).map(f).getOrElse(Left(IndexOutOfBoardError(x, y)))
@@ -109,3 +113,9 @@ object BoardParser {
   }
 }
 
+case class FlagPatch(flag: Option[FlagType]) {
+  def patch(x: Int, y: Int, board: Board): Either[MinesweeperError, Board] = flag.fold(board.unflag(x, y))(ft => board.flag(x, y, ft))
+}
+case class RevealPatch(revealed: Boolean) {
+  def patch(x: Int, y: Int, board: Board): Either[MinesweeperError, RevealResult] = if(revealed) board.reveal(x ,y) else UndoRevealError(x ,y).asLeft[RevealResult]
+}

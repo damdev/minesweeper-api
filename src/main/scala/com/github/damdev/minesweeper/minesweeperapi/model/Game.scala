@@ -32,7 +32,13 @@ case class Game(id: String, board: Board, owner: String, startTime: Instant = In
       .fold(
         err => copy(lastMoveError = Some(err.msg)),
         b => copy(board = b, finishTime = if(boardStatus.continue) None else Some(Instant.now()), lastMoveError = None)
-
       )
   }
+
+  def patch(x: Int, y: Int, patch: Either[RevealPatch, FlagPatch]): Game = board.patch(x, y, patch)
+    .fold(
+      err => copy(lastMoveError = Some(err.msg)),
+      rr => copy(board = rr.board, boardStatus = rr.boardStatus,
+        finishTime = if(boardStatus.continue) None else Some(Instant.now()), lastMoveError = None)
+    )
 }
