@@ -2,7 +2,7 @@ package com.github.damdev.minesweeper.minesweeperapi.repository
 
 import cats.data.OptionT
 import cats.effect.Effect
-import com.github.damdev.minesweeper.minesweeperapi.model.{Board, BoardStatus, Game, Position}
+import com.github.damdev.minesweeper.minesweeperapi.model.{Board, BoardStatus, FlagType, Game, Position}
 import doobie.free.connection.ConnectionIO
 import doobie.util.meta.Meta
 import doobie.util.query.Query0
@@ -15,14 +15,17 @@ import cats.implicits._
 
 private object PositionSQL {
 
+  implicit val FlagMeta: Meta[FlagType] =
+    Meta[String].imap(ft => FlagType.fromString(ft).get)(ft => FlagType.asString(ft))
+
   def upsert(p: Position, gameId: String): Update0 = sql"""
-    INSERT INTO POSITIONS (GAME_ID, X, Y, MINE, FLAGGED, REVEALED)
-    VALUES ($gameId, ${p.x}, ${p.y}, ${p.mine}, ${p.flagged}, ${p.revealed})
-    ON DUPLICATE KEY UPDATE MINE = ${p.mine}, FLAGGED = ${p.flagged}, REVEALED = ${p.revealed}
+    INSERT INTO POSITIONS (GAME_ID, X, Y, MINE, FLAG, REVEALED)
+    VALUES ($gameId, ${p.x}, ${p.y}, ${p.mine}, ${p.flag}, ${p.revealed})
+    ON DUPLICATE KEY UPDATE MINE = ${p.mine}, FLAG = ${p.flag}, REVEALED = ${p.revealed}
   """.update
 
   def findByGame(gameId: String): Query0[Position] = sql"""
-    SELECT X, Y, MINE, FLAGGED, REVEALED
+    SELECT X, Y, MINE, FLAG, REVEALED
     FROM POSITIONS
     WHERE GAME_ID = $gameId""".query
 
@@ -32,7 +35,7 @@ private object PositionSQL {
       X INT NOT NULL,
       Y INT NOT NULL,
       MINE BOOLEAN NOT NULL,
-      FLAGGED BOOLEAN NOT NULL,
+      FLAG VARCHAR(20),
       REVEALED BOOLEAN NOT NULL,
       PRIMARY KEY (GAME_ID, X, Y),
       FOREIGN KEY (GAME_ID)

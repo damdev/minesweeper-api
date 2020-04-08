@@ -23,7 +23,7 @@ class BoardSpec extends org.specs2.mutable.Specification {
     }
 
     def flag(x: Int, y: Int): State[Either[MinesweeperError, Board], Either[MinesweeperError, Board]] = State { b =>
-      val res = b.flatMap(_.flag(x, y))
+      val res = b.flatMap(_.flag(x, y, FlagType.RedFlag))
       (res, res)
     }
 

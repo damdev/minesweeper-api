@@ -7,8 +7,16 @@ case class Board(positions: Map[(Int, Int), Position]) {
   private def withPosition[T](x: Int, y: Int)(f: Position => Either[MinesweeperError, T]): Either[MinesweeperError, T] =
     positions.get(x -> y).map(f).getOrElse(Left(IndexOutOfBoardError(x, y)))
 
-  def flag(x: Int, y: Int): Either[MinesweeperError, Board] = withPosition(x, y) { p =>
-      val newBoard = copy(positions.updated(x -> y, p.toggleFlag()))
+  def flag(x: Int, y: Int, flagType: FlagType): Either[MinesweeperError, Board] = withPosition(x, y) { p =>
+      val newBoard = copy(positions.updated(x -> y, p.flag(flagType)))
+      if (newBoard.flagCount > newBoard.mineCount)
+        Left(TooManyFlagsError(mineCount))
+      else
+        Right(newBoard)
+  }
+
+  def unflag(x: Int, y: Int): Either[MinesweeperError, Board] = withPosition(x, y) { p =>
+      val newBoard = copy(positions.updated(x -> y, p.unflag()))
       if (newBoard.flagCount > newBoard.mineCount)
         Left(TooManyFlagsError(mineCount))
       else
@@ -16,7 +24,7 @@ case class Board(positions: Map[(Int, Int), Position]) {
   }
 
   private def mineCount = positions.values.count(_.mine)
-  private def flagCount = positions.values.count(_.flagged)
+  private def flagCount = positions.values.count(_.flag.contains(FlagType.RedFlag))
 
   private def winOrContinue(): RevealResult =
     if(positions.values.filter(!_.mine).forall(p => p.revealed)) RevealResult.win(this) else RevealResult.continue(this)

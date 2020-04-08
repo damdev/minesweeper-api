@@ -49,6 +49,6 @@ package object errors {
   }
 
   case class TooManyFlagsError(mines: Int) extends MinesweeperError {
-    override def msg: String = s"Too many flags. #Mines: $mines"
+    override def msg: String = s"Too many red flags. #Mines: $mines"
   }
 }

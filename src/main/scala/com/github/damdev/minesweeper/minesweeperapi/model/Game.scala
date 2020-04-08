@@ -14,8 +14,15 @@ case class Game(id: String, board: Board, owner: String, boardStatus: BoardStatu
       )
   }
 
-  def flag(x: Int, y: Int): Game = ifNotFinished {
-    board.flag(x, y)
+  def flag(x: Int, y: Int, flagType: FlagType): Game = ifNotFinished {
+    board.flag(x, y, flagType)
+      .fold(
+        err => copy(lastMoveError = Some(err.msg)),
+        b => copy(board = b, lastMoveError = None)
+      )
+  }
+  def unflag(x: Int, y: Int): Game = ifNotFinished {
+    board.unflag(x, y)
       .fold(
         err => copy(lastMoveError = Some(err.msg)),
         b => copy(board = b, lastMoveError = None)

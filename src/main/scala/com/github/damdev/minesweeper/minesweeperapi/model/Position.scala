@@ -1,8 +1,10 @@
 package com.github.damdev.minesweeper.minesweeperapi.model
 
 
-case class Position(x: Int, y: Int, mine: Boolean, flagged: Boolean = false, revealed: Boolean = false) {
-  def toggleFlag(): Position = this.copy(flagged = !flagged)
+case class Position(x: Int, y: Int, mine: Boolean, flag: Option[FlagType] = None, revealed: Boolean = false) {
+  def flag(flagType: FlagType): Position = this.copy(flag = Some(flagType))
+
+  def unflag(): Position = this.copy(flag = None)
 
   def reveal(): Position = this.copy(revealed = true)
 
@@ -21,7 +23,25 @@ case class Position(x: Int, y: Int, mine: Boolean, flagged: Boolean = false, rev
 
   def toString(b: Board): String =
     if(mine && revealed) "*"
-    else if (flagged) "F"
+    else if (flag.isDefined) FlagType.asString(flag.get).head.toString
     else userAdjacentMines(b).map(am => if(am > 0) am.toString else "R").getOrElse("_")
 }
 
+sealed trait FlagType
+
+object FlagType {
+
+  case object RedFlag extends FlagType
+  case object QuestionMark extends FlagType
+
+  def fromString(s: String): Option[FlagType] = s.toLowerCase match {
+    case "red_flag" => Some(RedFlag)
+    case "question_mark" => Some(QuestionMark)
+    case _ => None
+  }
+
+  def asString(f: FlagType): String = f match {
+    case RedFlag => "red_flag"
+    case QuestionMark => "question_mark"
+  }
+}

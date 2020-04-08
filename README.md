@@ -43,7 +43,7 @@ Please email your solution as soon as you have completed the challenge or the ti
 - [ ] Document API
 - [ ] Implement an API client library for the API designed above. Python.
 - [x] When a cell with no adjacent mines is revealed, all adjacent squares will be revealed (and repeat)
-- [ ] Ability to 'flag' a cell with a question mark or red flag
+- [x] Ability to 'flag' a cell with a question mark or red flag
 - [x] Detect when game is over
 - [x] Persistence
 - [ ] Time tracking

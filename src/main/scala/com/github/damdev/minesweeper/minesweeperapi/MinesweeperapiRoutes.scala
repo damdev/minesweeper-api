@@ -4,16 +4,16 @@ import cats.effect.Sync
 import cats.implicits._
 import com.github.damdev.minesweeper.minesweeperapi.codecs.GameCodecs._
 import com.github.damdev.minesweeper.minesweeperapi.codecs.UserCodecs._
+import com.github.damdev.minesweeper.minesweeperapi.model.FlagType
 import com.github.damdev.minesweeper.minesweeperapi.services._
 import com.github.damdev.minesweeper.minesweeperapi.utils.User
-import org.http4s.{AuthedRoutes, HttpRoutes}
-import org.http4s.circe.CirceEntityEncoder._
+import org.http4s.{AuthedRoutes, HttpRoutes, ParseFailure, QueryParamDecoder}
 import org.http4s.circe.CirceEntityDecoder._
+import org.http4s.circe.CirceEntityEncoder._
 import io.circe.syntax._
 import io.circe._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.dsl.impl.OptionalQueryParamDecoderMatcher
-import org.http4s.{AuthedRoutes, HttpRoutes}
 
 
 object MinesweeperapiRoutes {
@@ -40,10 +40,10 @@ object MinesweeperapiRoutes {
           revealed <- G.reveal(user, id, x, y)
           resp <- revealed.fold(_.toResponse[F], g => Ok(g))
         } yield resp
-      case GET -> Root / "game" / id / "flag" / IntVar(x) / IntVar(y) as user  =>
+      case GET -> Root / "game" / id / "flag" / IntVar(x) / IntVar(y) :? OptionalFlagTypeQueryParamMatcher(flagType) as user  =>
         for {
-          revealed <- G.flag(user, id, x, y)
-          resp <- revealed.fold(_.toResponse[F], g => Ok(g))
+          flagged <- G.flag(user, id, x, y, flagType.getOrElse(FlagType.RedFlag))
+          resp <- flagged.fold(_.toResponse[F], g => Ok(g))
         } yield resp
 
     }
@@ -76,6 +76,9 @@ object MinesweeperapiRoutes {
 
 }
 
+object OptionalFlagTypeQueryParamMatcher extends OptionalQueryParamDecoderMatcher[FlagType]("flag_type")(
+  QueryParamDecoder[String].emap(s => FlagType.fromString(s).toRight(ParseFailure(s"Invalid flag ${s} type only red_flag or question_mark.", s"Invalid flag ${s} type only red_flag or question_mark.")))
+)
 object OptionalMinesQueryParamMatcher extends OptionalQueryParamDecoderMatcher[Int]("mines")
 object OptionalHeightQueryParamMatcher extends OptionalQueryParamDecoderMatcher[Int]("height")
 object OptionalWidthQueryParamMatcher extends OptionalQueryParamDecoderMatcher[Int]("width")
