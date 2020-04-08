@@ -51,3 +51,4 @@ Please email your solution as soon as you have completed the challenge or the ti
 - [x] Game random generator configurable with number of rows, columns, and mines
 - [x] Ability to support multiple users/accounts
 - [x] Register user
+- [ ] flag and reveal should be PATCH over /game/:id
