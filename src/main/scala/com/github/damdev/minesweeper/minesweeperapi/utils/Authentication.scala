@@ -16,12 +16,19 @@ import sun.security.rsa.RSASignature.MD5withRSA
 
 
 case class User(username: String, hash: String)
+case class UserRequest(username: String, password: String)
+
+object User {
+  def hash(password: String): String = new String(MessageDigest.getInstance("MD5").digest(password.getBytes))
+
+  def fromRequest(ur: UserRequest): User = User(ur.username, hash(ur.password))
+}
 
 class Authentication[F[_]: Sync: Applicative](U: UserAlg[F]) {
 
 
   def validate: BasicAuthenticator[F, User] = { credentials =>
-      U.validate(credentials.username, Authentication.hash(credentials.password)).value
+      U.validate(credentials.username, User.hash(credentials.password)).value
   }
 
   def authUser: AuthMiddleware[F, User] =
@@ -29,7 +36,5 @@ class Authentication[F[_]: Sync: Applicative](U: UserAlg[F]) {
 }
 
 object Authentication {
-  def hash(password: String): String = new String(MessageDigest.getInstance("MD5").digest(password.getBytes))
-
   def apply[F[_]: Sync: Applicative](U: UserAlg[F]): Authentication[F] = new Authentication(U)
 }

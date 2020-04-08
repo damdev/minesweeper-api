@@ -57,7 +57,7 @@ class UserRepository[F[_]: Effect](val xa: Transactor[F]) {
 
   def setup(): F[Int] = (for {
     t <- table().run
-    _ <- insert(User("dam", Authentication.hash("dam"))).run
+    _ <- insert(User("dam", User.hash("dam"))).run
   } yield t).transact(xa)
 
 }

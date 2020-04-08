@@ -6,7 +6,7 @@ import com.github.damdev.minesweeper.minesweeperapi.codecs.GameCodecs._
 import com.github.damdev.minesweeper.minesweeperapi.codecs.UserCodecs._
 import com.github.damdev.minesweeper.minesweeperapi.model.FlagType
 import com.github.damdev.minesweeper.minesweeperapi.services._
-import com.github.damdev.minesweeper.minesweeperapi.utils.User
+import com.github.damdev.minesweeper.minesweeperapi.utils.{User, UserRequest}
 import org.http4s.{AuthedRoutes, HttpRoutes, ParseFailure, QueryParamDecoder}
 import org.http4s.circe.CirceEntityDecoder._
 import org.http4s.circe.CirceEntityEncoder._
@@ -55,8 +55,8 @@ object MinesweeperapiRoutes {
 
     HttpRoutes.of[F] {
       case req @ POST -> Root / "users" => for {
-        user <- req.as[User]
-        u <- U.saveUser(user)
+        user <- req.as[UserRequest]
+        u <- U.saveUser(User.fromRequest(user))
         resp <- Ok(s"User ${u.username} created.")
       } yield resp
     }
