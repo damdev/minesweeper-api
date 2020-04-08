@@ -40,7 +40,7 @@ Please email your solution as soon as you have completed the challenge or the ti
 
 # TODO
 - [x] Design and implement RESTful API
-- [ ] Document API
+- [x] Document API
 - [ ] Implement an API client library for the API designed above. Python.
 - [x] When a cell with no adjacent mines is revealed, all adjacent squares will be revealed (and repeat)
 - [x] Ability to 'flag' a cell with a question mark or red flag
@@ -51,7 +51,7 @@ Please email your solution as soon as you have completed the challenge or the ti
 - [x] Game random generator configurable with number of rows, columns, and mines
 - [x] Ability to support multiple users/accounts
 - [x] Register user
-- [ ] flag and reveal should be PATCH over /game/:id
+- [x] flag and reveal should be PATCH over /game/:id
 
 # API
 ## Authentication
